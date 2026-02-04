@@ -27,7 +27,12 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="participants-section">
               <strong>Participants:</strong>
               <ul class="participants-list">
-                ${details.participants.map(email => `<li>${email}</li>`).join("")}
+                ${details.participants.map(email => `
+                  <li style="display: flex; align-items: center;">
+                    <span>${email}</span>
+                    <button class="delete-btn" title="Remove participant" onclick="unregisterParticipant('${name}', '${email}')">&#128465;</button>
+                  </li>
+                `).join("")}
               </ul>
             </div>
           `;
@@ -82,6 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
         messageDiv.textContent = result.message;
         messageDiv.className = "success";
         signupForm.reset();
+        await fetchActivities(); // Refresh activities after registration
       } else {
         messageDiv.textContent = result.detail || "An error occurred";
         messageDiv.className = "error";
@@ -100,6 +106,15 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Error signing up:", error);
     }
   });
+
+
+  // Expose unregisterParticipant globally
+  window.unregisterParticipant = async function(activity, email) {
+    await fetch(`/activities/${encodeURIComponent(activity)}/unregister?email=${encodeURIComponent(email)}`, {
+      method: 'POST'
+    });
+    fetchActivities();
+  };
 
   // Initialize app
   fetchActivities();
